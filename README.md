@@ -8,21 +8,15 @@ This README serves as a quick start guide. We address architectural questions on
 
 ## Building
 
-`pg_shard` runs on Linux and OS X. The extension works with PostgreSQL 9.3.4+ or 9.4, and CitusDB 3.2.
+`pg_shard` runs on Linux and OS X. The extension works with PPAS 9.3.4+ or 9.4.
 
-Once you have PostgreSQL or CitusDB installed, you're ready to build `pg_shard`. For this, you will need to include the `pg_config` directory path in your `make` command. This path is typically the same as your PostgreSQL installation's `bin/` directory path. For example:
+Once you have PPAS installed, you're ready to build `pg_shard`. For this, you will need to include the `pg_config` directory path in your `make` command. This path is typically the same as your PostgreSQL installation's `bin/` directory path. For example:
 
     # Path when PostgreSQL is compiled from source
-    PATH=/usr/local/pgsql/bin/:$PATH make
-    sudo PATH=/usr/local/pgsql/bin/:$PATH make install
-
-    # Path when CitusDB package is installed
-    PATH=/opt/citusdb/3.0/bin/:$PATH make
-    sudo PATH=/opt/citusdb/3.0/bin/:$PATH make install
+    PATH=/usr/ppas-9.4/bin/:$PATH make
+    sudo PATH=/usr/ppas-9.4/bin/:$PATH make install
 
 `pg_shard` also includes regression tests. To verify your installation, start your Postgres instance with the `shared_preload_libraries` setting mentioned below, and run `make installcheck`.
-
-**Note:** CitusDB 3.2 is in Beta. If you'd like to build against CitusDB, please contact us at engage @ citusdata.com.
 
 ## Setup
 
@@ -30,7 +24,7 @@ Once you have PostgreSQL or CitusDB installed, you're ready to build `pg_shard`.
 
 An easy way to get started is by running your master and worker instances on the same machine. In that case, each instance will be one PostgreSQL database that runs on a different port. You can simply use `localhost` as the worker node's name in this setup.
 
-Alternatively, you could start up one PostgreSQL database per machine; this is more applicable for production workloads. If you do this, you'll need to configure your Postgres instances so that they can talk to each other. For that, you'll need to update the `listen_addresses` setting in your `postgresql.conf` file, and change access control settings in `pg_hba.conf`.
+Alternatively, you could start up one PPAS database per machine; this is more applicable for production workloads. If you do this, you'll need to configure your Postgres instances so that they can talk to each other. For that, you'll need to update the `listen_addresses` setting in your `postgresql.conf` file, and change access control settings in `pg_hba.conf`.
 
 Once you decide on your cluster setup, you will need to make two changes on the master node. First, you will need to add `pg_shard` to `shared_preload_libraries` in your `postgresql.conf`:
 
