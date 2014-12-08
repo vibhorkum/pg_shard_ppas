@@ -1,18 +1,18 @@
 # pg_shard
 
-`pg_shard` is a sharding extension for PostgreSQL. It shards and replicates your PostgreSQL tables for horizontal scale and high availability. The extension also seamlessly distributes your SQL statements, without requiring any changes to your application.
+`pg_shard` is a sharding extension for PPAS. It shards and replicates your PPAS tables for horizontal scale and high availability. The extension also seamlessly distributes your SQL statements, without requiring any changes to your application.
 
-As a standalone extension, `pg_shard` addresses many NoSQL use cases. It also enables real-time analytics, and has an easy upgrade path to [CitusDB](http://citusdata.com/) for complex analytical workloads (distributed joins). Further, the extension provides access to standard SQL tools, and powerful PostgreSQL features, such as diverse set of indexes and semi-structured data types.
+As a standalone extension, `pg_shard` addresses many NoSQL use cases. It also enables real-time analytics, and has an easy upgrade path to [CitusDB](http://citusdata.com/) for complex analytical workloads (distributed joins). Further, the extension provides access to standard SQL tools, and powerful PPAS features, such as diverse set of indexes and semi-structured data types.
 
 This README serves as a quick start guide. We address architectural questions on sharding, shard rebalancing, failure handling, and distributed consistency mechanisms on [our webpage](http://citusdata.com/docs/pg-shard). Also, we're actively working on improving `pg_shard`, and welcome any questions or feedback on our [mailing lists](https://groups.google.com/forum/#!forum/pg_shard-users).
 
 ## Building
 
-`pg_shard` runs on Linux and OS X. The extension works with PPAS 9.3.4+ or 9.4.
+`pg_shard` runs on Linux. The extension works with PPAS 9.3.4+ or 9.4.
 
-Once you have PPAS installed, you're ready to build `pg_shard`. For this, you will need to include the `pg_config` directory path in your `make` command. This path is typically the same as your PostgreSQL installation's `bin/` directory path. For example:
+Once you have PPAS installed, you're ready to build `pg_shard`. For this, you will need to include the `pg_config` directory path in your `make` command. This path is typically the same as your PPAS installation's `bin/` directory path. For example:
 
-    # Path when PostgreSQL is compiled from source
+    # Path when PPAS is compiled from source
     PATH=/usr/ppas-9.4/bin/:$PATH make
     sudo PATH=/usr/ppas-9.4/bin/:$PATH make install
 
@@ -20,17 +20,17 @@ Once you have PPAS installed, you're ready to build `pg_shard`. For this, you wi
 
 ## Setup
 
-`pg_shard` uses a master node to store shard metadata. In the simple setup, this node also acts as the interface for all queries to the cluster. As a user, you can pick any one of your PostgreSQL nodes as the master, and the other nodes in the cluster will then be your workers.
+`pg_shard` uses a master node to store shard metadata. In the simple setup, this node also acts as the interface for all queries to the cluster. As a user, you can pick any one of your PPAS nodes as the master, and the other nodes in the cluster will then be your workers.
 
-An easy way to get started is by running your master and worker instances on the same machine. In that case, each instance will be one PostgreSQL database that runs on a different port. You can simply use `localhost` as the worker node's name in this setup.
+An easy way to get started is by running your master and worker instances on the same machine. In that case, each instance will be one PPAS database that runs on a different port. You can simply use `localhost` as the worker node's name in this setup.
 
-Alternatively, you could start up one PPAS database per machine; this is more applicable for production workloads. If you do this, you'll need to configure your Postgres instances so that they can talk to each other. For that, you'll need to update the `listen_addresses` setting in your `postgresql.conf` file, and change access control settings in `pg_hba.conf`.
+Alternatively, you could start up one PPAS database per machine; this is more applicable for production workloads. If you do this, you'll need to configure your Postgres instances so that they can talk to each other. For that, you'll need to update the `listen_addresses` setting in your `PPAS.conf` file, and change access control settings in `pg_hba.conf`.
 
-Once you decide on your cluster setup, you will need to make two changes on the master node. First, you will need to add `pg_shard` to `shared_preload_libraries` in your `postgresql.conf`:
+Once you decide on your cluster setup, you will need to make two changes on the master node. First, you will need to add `pg_shard` to `shared_preload_libraries` in your `PPAS.conf`:
 
     shared_preload_libraries = 'pg_shard'    # (change requires restart)
 
-Second, the master node in `pg_shard` reads worker host information from a file called `pg_worker_list.conf` in the data directory. You need to add the hostname and port number of each worker node in your cluster to this file. For example, to add two worker nodes running on the default PostgreSQL port:
+Second, the master node in `pg_shard` reads worker host information from a file called `pg_worker_list.conf` in the data directory. You need to add the hostname and port number of each worker node in your cluster to this file. For example, to add two worker nodes running on the default PPAS port:
 
     $ emacs -nw $PGDATA/pg_worker_list.conf
 
@@ -113,9 +113,9 @@ SELECT * FROM pgs_distribution_metadata.shard;
 SELECT * FROM pgs_distribution_metadata.shard_placement;
 ```
 
-The `partition` metadata table indicates to `pg_shard` which PostgreSQL tables are distributed and how. The `shard` metadata table then maps a distributed table to its logical shards, and associates each shard with a portion of a hash token space spanning between `]-2B, +2B[`. Last, the `shard_placement` table maintains each shard's location information, that is, the worker node name and port for that shard. As an example, if you're using a replication factor of 2, then each shard will have two shard placements.
+The `partition` metadata table indicates to `pg_shard` which PPAS tables are distributed and how. The `shard` metadata table then maps a distributed table to its logical shards, and associates each shard with a portion of a hash token space spanning between `]-2B, +2B[`. Last, the `shard_placement` table maintains each shard's location information, that is, the worker node name and port for that shard. As an example, if you're using a replication factor of 2, then each shard will have two shard placements.
 
-Each shard placement in `pg_shard` corresponds to one PostgreSQL table on a worker node. You can probe into these tables by connecting to any one of the workers, and running standard Postgres commands:
+Each shard placement in `pg_shard` corresponds to one PPAS table on a worker node. You can probe into these tables by connecting to any one of the workers, and running standard Postgres commands:
 
     psql -d postgres -h worker-101 -p 5432
     postgres=# \d
@@ -127,7 +127,7 @@ Each shard placement in `pg_shard` corresponds to one PostgreSQL table on a work
 
 * Transactional semantics for queries that span across multiple shards - For example, you're a financial institution and you sharded your data based on `customer_id`. You'd now like to withdraw money from one customer's account and debit it to another one's account, in a single transaction block.
 * Unique constraints on columns other than the partition key, or foreign key constraints.
-* Distributed `JOIN`s also aren't supported in `pg_shard` - If you'd like to run complex analytic queries, please consider upgrading to CitusDB.
+* Distributed `JOIN`s also aren't supported in `pg_shard`
 
 Besides these limitations, we have a list of features that we're looking to add. Instead of prioritizing this list ourselves, we decided to keep an open discussion on GitHub issues and hear what you have to say. So, if you have a favorite feature missing from `pg_shard`, please do get in touch!
 
